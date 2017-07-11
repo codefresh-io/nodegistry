@@ -1,0 +1,9 @@
+{
+  "name": "nodegistry",
+  "version": "0.0.1",
+  "description": "Docker Registry Remote API module.",
+  "main": "index.js",
+  "repository": "git@github.com:codefresh-io/nodegistry.git",
+  "author": "Roy Shmueli <roy@codefresh.io>",
+  "license": "MIT"
+}
