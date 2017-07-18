@@ -85,7 +85,7 @@ describe('Image Repository -', () => {
                     payload: 'this is the manifest',
                     statusCodes: match.any
                 }));
-        })
+        });
     });
 
 });

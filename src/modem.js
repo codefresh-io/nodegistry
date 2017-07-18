@@ -14,7 +14,7 @@ const UNAUTHORIZED_STATUS_CODE = 401;
 exports.RegistryModem = class {
 
     constructor(options) {
-        const Promise = this._promise = options.promise || Promise;
+        this._promise = options.promise || Promise;
         this.clientId = options.clientId || os.hostname();
 
         this._request = request.defaults({
@@ -23,9 +23,9 @@ exports.RegistryModem = class {
 
         if (typeof options.credentials === 'function') {
             const credentialsFunction = options.credentials;
-            this._getCredentials = () => Promise.resolve(credentialsFunction());
+            this._getCredentials = () => this._promise.resolve(credentialsFunction());
         } else {
-            this._getCredentials = () => Promise.resolve(options.credentials);
+            this._getCredentials = () => this._promise.resolve(options.credentials);
         }
 
         this._authenticationInfoPromise = undefined;
@@ -133,10 +133,10 @@ exports.RegistryModem = class {
                     switch (response.statusCode) {
                         case OK_STATUS_CODE:
                             return undefined;
-                        case UNAUTHORIZED_STATUS_CODE:
-
-                            const authenticationHeader = response.headers[AUTHENTICATION_HEADER_NAME];
-                            return parseAuthenticationHeader(authenticationHeader);
+                        case UNAUTHORIZED_STATUS_CODE: {
+                            const authHeader = response.headers[AUTHENTICATION_HEADER_NAME];
+                            return parseAuthenticationHeader(authHeader);
+                        }
                         default:
                             throw new Error(`Unknown status code ${response.statusCode} on ` +
                                              'getting authentication information');
