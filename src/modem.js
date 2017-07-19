@@ -18,7 +18,8 @@ exports.RegistryModem = class {
         this.clientId = options.clientId || os.hostname();
 
         this._request = request.defaults({
-            baseUrl: `${options.protocol}://${options.host}:${options.port}/${options.version}`
+            baseUrl: `${options.protocol}://${options.host}:${options.port}/${options.version}`,
+            followRedirect: false
         });
 
         if (typeof options.credentials === 'function') {
@@ -33,6 +34,8 @@ exports.RegistryModem = class {
 
     dial(options) {
         const statusCodes = options.statusCodes;
+        const redirectsCodes = options.redirectCodes || [];
+
         const requestOptions = {
             method: options.method,
             url: options.path,
@@ -68,7 +71,15 @@ exports.RegistryModem = class {
             }))
             .then(([response, body]) => {
                 const currentStatus = statusCodes[response.statusCode];
-                if (currentStatus === true) {
+
+                if (redirectsCodes.includes(response.statusCode)) {
+                    return request({
+                        method: options.method,
+                        url: response.headers.location,
+                        headers: options.headers,
+                        body: options.payload
+                    });
+                } else if (currentStatus === true) {
                     return body;
                 } else {
                     throw new Error(currentStatus || 'Unknown error');

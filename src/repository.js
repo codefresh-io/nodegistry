@@ -69,6 +69,9 @@ exports.ImageRepository = class {
             headers: {
                 'Accept': config.mediaType,
             },
+            redirectsCode: [
+                307
+            ],
             statusCodes: {
                 200: true,
                 400: 'Manifest invalid',
