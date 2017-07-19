@@ -45,11 +45,9 @@ exports.RegistryModem = class {
         if (options.auth) {
             authPromise = this._retrieveAuthenticationToken(options.auth.repository,
                                                             options.auth.actions)
-                .then((token) => {
-                    if (token) {
-                        requestOptions.auth = {
-                            bearer: token
-                        };
+                .then((auth) => {
+                    if (auth) {
+                        requestOptions.auth = auth;
                     }
                 });
         } else {
@@ -77,42 +75,44 @@ exports.RegistryModem = class {
     }
 
     _retrieveAuthenticationToken(repository, actions) {
-        return this._promise.all([
-            this._retrieveAuthenticationInfo(),
-            this._getCredentials()
-        ])
-            .then(([authInfo, credentials]) => {
-                if (!authInfo) {
-                    return undefined;
-                }
+        return this._getCredentials();
 
-                return new this._promise((resolve, reject) => {
-                    request({
-                        url: authInfo.realm,
-                        qs: {
-                            scope: `repository:${repository}:${actions.join(',')}`,
-                            service: authInfo.service,
-                            client_id: this.clientId
-                        },
-                        auth: credentials,
-                        json: true
-                    }, (err, response, body) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve([response, body]);
-                        }
-                    });
-                })
-                    .then(([response, body]) => {
-                        if (response.statusCode !== OK_STATUS_CODE) {
-                            const message = body.details || (body.errors && body.errors.length && body.errors[0].message) || 'Unknown Error';
-                            throw new Error(`Failed retrieving token: ${message}`);
-                        }
-
-                        return body.token || body.access_token;
-                    });
-            });
+        // return this._promise.all([
+        //     this._retrieveAuthenticationInfo(),
+        //     this._getCredentials()
+        // ])
+        //     .then(([authInfo, credentials]) => {
+        //         if (!authInfo) {
+        //             return undefined;
+        //         }
+        //
+        //         return new this._promise((resolve, reject) => {
+        //             request({
+        //                 url: authInfo.realm,
+        //                 qs: {
+        //                     scope: `repository:${repository}:${actions.join(',')}`,
+        //                     service: authInfo.service,
+        //                     client_id: this.clientId
+        //                 },
+        //                 auth: credentials,
+        //                 json: true
+        //             }, (err, response, body) => {
+        //                 if (err) {
+        //                     reject(err);
+        //                 } else {
+        //                     resolve([response, body]);
+        //                 }
+        //             });
+        //         })
+        //             .then(([response, body]) => {
+        //                 if (response.statusCode !== OK_STATUS_CODE) {
+        //                     const message = body.details || (body.errors && body.errors.length && body.errors[0].message) || 'Unknown Error';
+        //                     throw new Error(`Failed retrieving token: ${message}`);
+        //                 }
+        //
+        //                 return body.token || body.access_token;
+        //             });
+        //     });
     }
 
     _retrieveAuthenticationInfo() {
