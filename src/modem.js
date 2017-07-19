@@ -10,7 +10,6 @@ const AUTHENTICATION_HEADER_NAME = 'www-authenticate';
 const OK_STATUS_CODE = 200;
 const UNAUTHORIZED_STATUS_CODE = 401;
 
-
 exports.RegistryModem = class {
 
     constructor(options) {
@@ -34,7 +33,7 @@ exports.RegistryModem = class {
 
     dial(options) {
         const statusCodes = options.statusCodes;
-        const redirectsCodes = options.redirectCodes || [];
+        const redirectCodes = options.redirectCodes || [];
 
         const requestOptions = {
             method: options.method,
@@ -70,13 +69,19 @@ exports.RegistryModem = class {
             .then(([response, body]) => {
                 const currentStatus = statusCodes[response.statusCode];
 
-                if (redirectsCodes.includes(response.statusCode)) {
-                    return request({
+                if (redirectCodes.includes(response.statusCode)) {
+                    return new this._promise((resolve, reject) => request({
                         method: options.method,
                         url: response.headers.location,
                         headers: options.headers,
                         body: options.payload
-                    });
+                    }, (err, newResponse, newBody) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve([newResponse, newBody]);
+                        }
+                    }));
                 } else if (currentStatus === true) {
                     return body;
                 } else {

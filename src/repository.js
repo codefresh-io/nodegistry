@@ -69,7 +69,7 @@ exports.ImageRepository = class {
             headers: {
                 'Accept': config.mediaType,
             },
-            redirectsCode: [
+            redirectCodes: [
                 307
             ],
             statusCodes: {
