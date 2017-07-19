@@ -79,7 +79,7 @@ exports.RegistryModem = class {
                         if (err) {
                             reject(err);
                         } else {
-                            resolve([newResponse, newBody]);
+                            resolve(newBody);
                         }
                     }));
                 } else if (currentStatus === true) {
