@@ -1,6 +1,8 @@
 'use strict';
 
-const DEFAULT_MANIFEST_TYPE = 'vnd.docker.distribution.manifest.v2';
+const { Manifest } = require('./manifest');
+
+const DEFAULT_MANIFEST_TYPE = 'application/vnd.docker.distribution.manifest.v2+json';
 
 exports.ImageRepository = class {
 
@@ -18,7 +20,7 @@ exports.ImageRepository = class {
                 actions: ['pull']
             },
             headers: {
-                'Accept': `application/${DEFAULT_MANIFEST_TYPE}+json`
+                'Accept': DEFAULT_MANIFEST_TYPE
             },
             statusCodes: {
                 200: true,
@@ -27,10 +29,7 @@ exports.ImageRepository = class {
             }
         })
             .then((rawManifest) => {
-                return {
-                    type: DEFAULT_MANIFEST_TYPE,
-                    raw: rawManifest
-                };
+                return new Manifest(rawManifest);
             });
     }
 
@@ -43,7 +42,7 @@ exports.ImageRepository = class {
                 actions: ['push']
             },
             headers: {
-                'Content-Type': `application/${manifest.type}+json`,
+                'Content-Type': manifest.mediaType,
             },
             payload: manifest.raw,
             statusCodes: {
@@ -55,5 +54,29 @@ exports.ImageRepository = class {
                 405: 'Operation is not supported'
             }
         });
+    }
+
+    getConfig(manifest) {
+        const config = manifest.configInformation;
+
+        return this._modem.dial({
+            method: 'GET',
+            path: `/${this._path}/blobs/${config.digest}`,
+            auth: {
+                repository: this._path,
+                actions: ['pull']
+            },
+            headers: {
+                'Accept': config.mediaType,
+            },
+            statusCodes: {
+                200: true,
+                400: 'Manifest invalid',
+                401: 'Unauthorized operation',
+                403: 'Forbidden operation',
+                404: 'Configuration not found'
+            }
+        })
+            .then(JSON.parse);
     }
 };
