@@ -4,6 +4,7 @@ const request = require('request');
 const os = require('os');
 
 const { parseAuthenticationHeader } = require('./auth-header-parser');
+const { buildUrl } = require('./url-builder');
 
 const AUTHENTICATION_HEADER_NAME = 'www-authenticate';
 
@@ -18,7 +19,7 @@ exports.RegistryModem = class {
         this.clientId = options.clientId || os.hostname();
 
         this._request = request.defaults({
-            baseUrl: `${options.protocol}://${options.host}:${options.port}/${options.version}`
+            baseUrl: buildUrl(options)
         });
 
         if (typeof options.credentials === 'function') {
