@@ -11,6 +11,7 @@ exports.Registry = class {
             clientId: options.clientId,
             credentials: options.credentials,
 
+            url: options.url,
             protocol: options.protocol,
             host: options.host,
             port: options.port,
