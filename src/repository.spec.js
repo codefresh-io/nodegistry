@@ -12,6 +12,10 @@ chai.use(chaiAsPromised);
 const { expect } = chai;
 const { match } = sinon;
 
+const RAW_MANIFEST = JSON.stringify({
+    mediaType: 'application/vnd.docker.distribution.manifest.v2+json'
+});
+
 describe('Image Repository -', () => {
 
     let imageRepository;
@@ -44,19 +48,20 @@ describe('Image Repository -', () => {
                 },
                 statusCodes: match.any
             })
-                .resolves('raw manifest');
+                .resolves(RAW_MANIFEST);
         });
 
         it('should return a manifest object with the raw manifest', () => {
             const manifest = imageRepository.getManifest('tag');
 
-            return expect(manifest).to.eventually.have.property('raw', 'raw manifest');
+            return expect(manifest).to.eventually.have.property('raw', RAW_MANIFEST);
         });
 
         it('should return a manifest object with the type of the manifest', () => {
             const manifest = imageRepository.getManifest('tag');
 
-            return expect(manifest).to.eventually.have.property('type', 'vnd.docker.distribution.manifest.v2');
+            return expect(manifest).to.eventually
+                .have.property('mediaType', 'application/vnd.docker.distribution.manifest.v2+json');
         });
 
     });
@@ -69,7 +74,7 @@ describe('Image Repository -', () => {
         it('should dial to the registry', () => {
             return imageRepository
                 .putManifest('new-tag', {
-                    type: 'some-type-of-manifest',
+                    mediaType: 'application/some-type-of-manifest+json',
                     raw: 'this is the manifest'
                 })
                 .then(() => expect(dialStub).to.have.been.calledWithMatch({
