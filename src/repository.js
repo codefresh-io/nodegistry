@@ -39,7 +39,7 @@ exports.ImageRepository = class {
             path: `/${this._path}/manifests/${tag}`,
             auth: {
                 repository: this._path,
-                actions: ['push']
+                actions: ['pull', 'push']
             },
             headers: {
                 'Content-Type': manifest.mediaType,
