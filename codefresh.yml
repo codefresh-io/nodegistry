@@ -11,12 +11,12 @@ steps:
       - yarn install --frozen-lockfile
       - yarn lint
       - yarn test
-      
+
   deploy_to_npm:
      title: Publishing To Npm
      image: codefresh/npm-publish:master
      commands:
-       - NPM_TOKEN=${{NPM_TOKEN}} npm run ci-publish
+       - NPM_TOKEN=${{NPM_TOKEN}} npm run publish
      when:
        branch:
          only: [ master ]
