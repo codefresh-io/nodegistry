@@ -10,7 +10,7 @@
     "lint": "eslint --rule 'no-trailing-spaces: [\"warn\", { \"skipBlankLines\": false }]' \"./**/*.js\"",
     "lint:fix": "eslint --fix --rule 'no-trailing-spaces: [\"warn\", { \"skipBlankLines\": false }]' \"./**/*.js\"",
     "test": "mocha src/**/*.spec.js",
-    "publish": "publish"
+    "publish": "ci-publish"
   },
   "devDependencies": {
     "chai": "^4.0.2",
@@ -26,7 +26,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
     "nock": "^9.0.13",
-    "publish": "^0.6.0",
+    "ci-publish": "^1.3.0",
     "rimraf": "^2.6.1",
     "sinon": "^2.3.7",
     "sinon-chai": "^2.11.0"
