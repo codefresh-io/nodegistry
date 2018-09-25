@@ -34,8 +34,7 @@ describe('Manifest', () => {
         let manifest;
         try {
             manifest = await repository.getManifest(tag);
-        }
-        catch (e) {
+        }        catch (e) {
             expect(true).to.equal(false);
         }
 
@@ -45,8 +44,7 @@ describe('Manifest', () => {
             manifest = await repository.getManifest(tagForPush);
 
             expect(manifest).to.not.be.null;
-        }
-        catch (e) {
+        } catch (e) {
             expect(true).to.equal(false);
         }
     }).timeout(5000);
