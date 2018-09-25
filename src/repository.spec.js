@@ -82,7 +82,7 @@ describe('Image Repository -', () => {
                     path: '/image/path/manifests/new-tag',
                     auth: {
                         repository: 'image/path',
-                        actions: ['push']
+                        actions: ['pull', 'push']
                     },
                     headers: {
                         'Content-Type': 'application/some-type-of-manifest+json'
