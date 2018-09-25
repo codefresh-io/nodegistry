@@ -9,7 +9,6 @@
   "scripts": {
     "lint": "eslint --rule 'no-trailing-spaces: [\"warn\", { \"skipBlankLines\": false }]' \"./**/*.js\"",
     "lint:fix": "eslint --fix --rule 'no-trailing-spaces: [\"warn\", { \"skipBlankLines\": false }]' \"./**/*.js\"",
-    "depcheck": "depcheck --ignores rimraf",
     "test": "mocha src/**/*.spec.js",
     "publish": "publish"
   },

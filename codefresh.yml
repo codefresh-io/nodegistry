@@ -10,7 +10,7 @@ steps:
     commands:
       - yarn install --frozen-lockfile
       - yarn lint
-      - yarn depcheck
+      - yarn test
   publish_package:
     title: "Publishing package to npm..."
     image: node:6.10.3-alpine
