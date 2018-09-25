@@ -11,8 +11,6 @@
     "lint:fix": "eslint --fix --rule 'no-trailing-spaces: [\"warn\", { \"skipBlankLines\": false }]' \"./**/*.js\"",
     "depcheck": "depcheck --ignores rimraf",
     "test": "mocha src/**/*.spec.js",
-    "test:coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- src/**/*.spec.js",
-    "clean": "rimraf ./coverage",
     "publish": "publish"
   },
   "devDependencies": {
