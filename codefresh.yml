@@ -11,19 +11,7 @@ steps:
       - yarn install --frozen-lockfile
       - yarn lint
       - yarn test
-  publish_package:
-    title: "Publishing package to npm..."
-    image: node:6.10.3-alpine
-    environment:
-      - NPM_TOKEN=${{NPM_TOKEN}}
-    commands:
-      - echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > ~/.npmrc
-      - npm run publish
-    when:
-      branch:
-        only:
-          - master
-
+      
   deploy_to_npm:
      title: Publishing To Npm
      image: codefresh/npm-publish:master
