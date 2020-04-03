@@ -62,11 +62,12 @@ exports.ImageRepository = class {
             path: `/${this._path}/manifests/${tag}`,
             auth: {
                 repository: this._path,
-                actions: ['delete']
+                actions: ['push']
             },
             statusCodes: {
                 200: true,
                 201: true,
+                202: true,
                 400: 'Manifest invalid',
                 401: 'Unauthorized operation',
                 403: 'Forbidden operation',
