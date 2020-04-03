@@ -56,6 +56,25 @@ exports.ImageRepository = class {
         });
     }
 
+    deleteManifest(tag) {
+        return this._modem.dial({
+            method: 'DELETE',
+            path: `/${this._path}/manifests/${tag}`,
+            auth: {
+                repository: this._path,
+                actions: ['delete']
+            },
+            statusCodes: {
+                200: true,
+                201: true,
+                400: 'Manifest invalid',
+                401: 'Unauthorized operation',
+                403: 'Forbidden operation',
+                405: 'Operation is not supported'
+            }
+        });
+    }
+
     getConfig(manifest) {
         const config = manifest.configInformation;
 
