@@ -9,6 +9,7 @@ exports.Registry = class {
         this._modem = new RegistryModem({
             promise: Promise,
             clientId: options.clientId,
+            auth: options.auth,
             credentials: options.credentials,
 
             url: options.url,

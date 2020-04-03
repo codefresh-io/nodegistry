@@ -17,6 +17,7 @@ exports.RegistryModem = class {
     constructor(options) {
         this._promise = options.promise || Promise;
         this.clientId = options.clientId || os.hostname();
+        this._auth = options.auth;
 
         this._request = request.defaults({
             baseUrl: buildUrl(options)
@@ -43,7 +44,7 @@ exports.RegistryModem = class {
         };
 
         let authPromise;
-        if (options.auth) {
+        if (options.auth && !this._auth) {
             authPromise = this._retrieveAuthenticationToken(options.auth.repository,
                                                             options.auth.actions)
                 .then((token) => {
@@ -54,6 +55,7 @@ exports.RegistryModem = class {
                     }
                 });
         } else {
+            requestOptions.auth = this._auth;
             authPromise = this._promise.resolve();
         }
 
