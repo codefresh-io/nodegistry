@@ -44,18 +44,31 @@ exports.RegistryModem = class {
         };
 
         let authPromise;
-        if (options.auth && !this._auth) {
-            authPromise = this._retrieveAuthenticationToken(options.auth.repository,
-                                                            options.auth.actions)
-                .then((token) => {
-                    if (token) {
-                        requestOptions.auth = {
-                            bearer: token
-                        };
+        if (options.auth) {
+            authPromise = this._promise.all([
+                this._retrieveAuthenticationInfo(),
+                this._getCredentials(),
+            ])
+                .then(([authInfo, credentials]) => {
+                    if (authInfo.realm === 'basic') {
+                        requestOptions.auth = credentials;
+                        return this._promise.resolve();
                     }
+                    return this._retrieveAuthenticationToken(
+                        authInfo,
+                        credentials,
+                        options.auth.repository,
+                        options.auth.actions,
+                    )
+                        .then((token) => {
+                            if (token) {
+                                requestOptions.auth = {
+                                    bearer: token,
+                                };
+                            }
+                        });
                 });
         } else {
-            requestOptions.auth = this._auth;
             authPromise = this._promise.resolve();
         }
 
@@ -79,16 +92,12 @@ exports.RegistryModem = class {
             });
     }
 
-    _retrieveAuthenticationToken(repository, actions) {
-        return this._promise.all([
-            this._retrieveAuthenticationInfo(),
-            this._getCredentials()
-        ])
-            .then(([authInfo, credentials]) => {
-                if (!authInfo) {
-                    return undefined;
-                }
-
+    _retrieveAuthenticationToken(authInfo, credentials, repository, actions) {
+        if (!authInfo) {
+            return undefined;
+        }
+        return this._promise.resolve()
+            .then(() => {
                 return new this._promise((resolve, reject) => {
                     request({
                         url: authInfo.realm,

@@ -1,9 +1,13 @@
 'use strict';
 
+const BASIC_AUTHENTICATION_HEADER_PREFIX = 'Basic ';
 const AUTHENTICATION_HEADER_PREFIX = 'Bearer ';
 const AUTHENTICATION_HEADER_REGEX = /^Bearer (?:[a-zA-Z]*)="(?:[^"]*)"(?:,(?:[a-zA-Z]*)="(?:[^"]*)")*$/;
 
 exports.parseAuthenticationHeader = (header) => {
+    if (header.startsWith(BASIC_AUTHENTICATION_HEADER_PREFIX)) {
+        return { realm: 'basic' };
+    }
     if (!header.startsWith(AUTHENTICATION_HEADER_PREFIX)) {
         throw new Error(`Authentication string must start with "${AUTHENTICATION_HEADER_PREFIX.trim()}"`);
     }
