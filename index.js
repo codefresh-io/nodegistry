@@ -1,5 +1,6 @@
 'use strict';
 
-const { Registry } = require('./src/registry');
+const { Client } = require('./src/lib/Client');
+const registries = require('./src/registries');
 
-module.exports = Registry;
+module.exports = { Client, registries };

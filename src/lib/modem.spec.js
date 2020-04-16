@@ -6,7 +6,7 @@ const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
 const chaiAsPromised = require('chai-as-promised');
 
-const { RegistryModem } = require('./modem');
+const { RegistryModem } = require('./Modem');
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);

@@ -1,6 +1,7 @@
 'use strict';
 
-const request = require('request');
+const _ = require('lodash');
+const request = require('requestretry');
 const os = require('os');
 
 const { parseAuthenticationHeader } = require('./auth-header-parser');
@@ -17,11 +18,20 @@ exports.RegistryModem = class {
     constructor(options) {
         this._promise = options.promise || Promise;
         this.clientId = options.clientId || os.hostname();
-        this._auth = options.auth;
 
-        this._request = request.defaults({
-            baseUrl: buildUrl(options)
-        });
+        const requestOptions = options.request || {};
+        const requestConfig = {};
+        if (requestOptions.url || requestOptions.host) {
+            requestConfig.baseUrl = buildUrl(requestOptions);
+        }
+        this._request = request.defaults(_.assign(requestConfig, _.pick(requestOptions, [
+            'timeout',
+            'retryStrategy',
+            'maxAttempts',
+            'retryDelay',
+            'promiseFactory',
+            'ca',
+        ])));
 
         if (typeof options.credentials === 'function') {
             const credentialsFunction = options.credentials;
@@ -43,36 +53,41 @@ exports.RegistryModem = class {
             body: options.payload
         };
 
-        let authPromise;
-        if (options.auth) {
-            authPromise = this._promise.all([
-                this._retrieveAuthenticationInfo(),
-                this._getCredentials(),
-            ])
-                .then(([authInfo, credentials]) => {
-                    if (authInfo.realm === 'basic') {
-                        requestOptions.auth = credentials;
-                        return this._promise.resolve();
-                    }
-                    return this._retrieveAuthenticationToken(
-                        authInfo,
-                        credentials,
-                        options.auth.repository,
-                        options.auth.actions,
-                    )
-                        .then((token) => {
-                            if (token) {
-                                requestOptions.auth = {
-                                    bearer: token,
-                                };
+        return this._getCredentials()
+            .then((credentials) => {
+                // mainly ecr case which has proxyEndpoint
+                if (credentials.host) {
+                    this._request = this._request.defaults({
+                        baseUrl: buildUrl(_.pick(credentials, 'host')),
+                    });
+                }
+                return credentials;
+            })
+            .then((credentials) => {
+                if (options.auth) {
+                    return this._retrieveAuthenticationInfo()
+                        .then((authInfo) => {
+                            if (authInfo.realm === 'basic') {
+                                requestOptions.auth = credentials;
+                                return this._promise.resolve();
                             }
+                            return this._retrieveAuthenticationToken(
+                                authInfo,
+                                credentials,
+                                options.auth.repository,
+                                options.auth.actions,
+                            )
+                                .then((token) => {
+                                    if (token) {
+                                        requestOptions.auth = {
+                                            bearer: token,
+                                        };
+                                    }
+                                });
                         });
-                });
-        } else {
-            authPromise = this._promise.resolve();
-        }
-
-        return authPromise
+                }
+                return this._promise.resolve();
+            })
             .then(() => new this._promise((resolve, reject) => {
                 this._request(requestOptions, (err, response, body) => {
                     if (err) {
@@ -102,7 +117,7 @@ exports.RegistryModem = class {
                     request({
                         url: authInfo.realm,
                         qs: {
-                            scope: `repository:${repository}:${actions.join(',')}`,
+                            scope: repository ? `repository:${repository}:${actions.join(',')}` : undefined,
                             service: authInfo.service,
                             client_id: this.clientId
                         },

@@ -7,7 +7,7 @@ exports.buildUrl = (options) => {
     }
 
     if (options.host) {
-        const protocol = options.protocol || 'http';
+        const protocol = options.protocol || 'https';
         const version = options.version || 'v2';
 
         if (options.port) {

@@ -2,7 +2,7 @@
 
 const { expect } = require('chai');
 
-const Registry                   = require('../');
+const Registry                   = require('../../index');
 
 describe('Manifest', () => {
 
@@ -17,7 +17,7 @@ describe('Manifest', () => {
     it('pull + push', async () => {
 
         const repositoryURL = process.env.DOCKERHUB_REPOSITORY || 'pashacodefresh/cftestreporter';
-        const registry = new Registry({
+        const registry = new Client({
             promise: Promise,
             url: `${options._protocol}://${options._domain}/v2`,
             credentials: {

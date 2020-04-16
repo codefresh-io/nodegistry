@@ -1,22 +1,46 @@
 'use strict';
 
-const { Manifest } = require('./manifest');
+const { RegistryModem } = require('./Modem');
+const { Manifest } = require('./Manifest');
 
 const DEFAULT_MANIFEST_TYPE = 'application/vnd.docker.distribution.manifest.v2+json';
 
-exports.ImageRepository = class {
-
+exports.Client = class {
     constructor(options) {
-        this._path = options.path;
-        this._modem = options.modem;
+        this._modem = new RegistryModem({
+            promise: options.promise || Promise,
+            clientId: options.clientId,
+            credentials: options.credentials,
+
+            request: options.request,
+
+            url: options.url,
+            protocol: options.protocol,
+            host: options.host,
+            port: options.port,
+            version: options.version
+        });
     }
 
-    getManifest(tag) {
+    ping() {
         return this._modem.dial({
             method: 'GET',
-            path: `/${this._path}/manifests/${tag}`,
+            path: '/',
+            auth: {},
+            statusCodes: {
+                200: true,
+                401: 'Unauthorized operation',
+                403: 'Forbidden operation'
+            }
+        })
+    }
+
+    getManifest(repository, reference) {
+        return this._modem.dial({
+            method: 'GET',
+            path: `/${repository}/manifests/${reference}`,
             auth: {
-                repository: this._path,
+                repository,
                 actions: ['pull']
             },
             headers: {
@@ -33,12 +57,12 @@ exports.ImageRepository = class {
             });
     }
 
-    putManifest(tag, manifest) {
+    putManifest(repository, reference, manifest) {
         return this._modem.dial({
             method: 'PUT',
-            path: `/${this._path}/manifests/${tag}`,
+            path: `/${repository}/manifests/${reference}`,
             auth: {
-                repository: this._path,
+                repository,
                 actions: ['pull', 'push']
             },
             headers: {
@@ -56,12 +80,12 @@ exports.ImageRepository = class {
         });
     }
 
-    deleteManifest(tag) {
+    deleteManifest(repository, reference) {
         return this._modem.dial({
             method: 'DELETE',
-            path: `/${this._path}/manifests/${tag}`,
+            path: `/${repository}/manifests/${reference}`,
             auth: {
-                repository: this._path,
+                repository,
                 actions: ['push']
             },
             statusCodes: {
@@ -76,14 +100,14 @@ exports.ImageRepository = class {
         });
     }
 
-    getConfig(manifest) {
+    getConfig(repository, manifest) {
         const config = manifest.configInformation;
 
         return this._modem.dial({
             method: 'GET',
-            path: `/${this._path}/blobs/${config.digest}`,
+            path: `/${repository}/blobs/${config.digest}`,
             auth: {
-                repository: this._path,
+                repository,
                 actions: ['pull']
             },
             headers: {
@@ -100,3 +124,4 @@ exports.ImageRepository = class {
             .then(JSON.parse);
     }
 };
+
