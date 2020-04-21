@@ -13,12 +13,7 @@ exports.Client = class {
             credentials: options.credentials,
 
             request: options.request,
-
-            url: options.url,
-            protocol: options.protocol,
-            host: options.host,
-            port: options.port,
-            version: options.version
+            registry: options.registry,
         });
     }
 
