@@ -1,15 +1,30 @@
 'use strict';
 
+const _ = require('lodash');
+const Url = require('url');
+
 const { Client } = require('../lib/Client');
 const { parseFamiliarName } = require('@codefresh-io/docker-reference');
+const { buildUrl } = require('../lib/url-builder');
 
 class StandardRegistry {
     constructor(options) {
         this.credentials = options.credentials;
+        this.requestOptions = options.request;
         this._promise = options.promise || Promise;
-        this.api = new Client(Object.assign(options, {
+        this.api = new Client(_.assign(options, {
+            registry: this,
             credentials: () => this.getCredentials(),
         }));
+    }
+
+    async getUrl() {
+        return buildUrl(this.requestOptions);
+    }
+
+    async getDomain() {
+        const url = await this.getUrl();
+        return Url.parse(url).host;
     }
 
     ping() {

@@ -30,9 +30,9 @@ exports.Client = class {
             statusCodes: {
                 200: true,
                 401: 'Unauthorized operation',
-                403: 'Forbidden operation'
-            }
-        })
+                403: 'Forbidden operation',
+            },
+        });
     }
 
     getManifest(repository, reference) {

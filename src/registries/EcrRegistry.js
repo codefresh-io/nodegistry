@@ -17,18 +17,26 @@ class EcrRegistry extends StandardRegistry {
     }
 
     async getCredentials() {
-        const token = await this._ecr
-            .getAuthorizationToken()
-            .promise();
-        const data = _.first(token.authorizationData);
+        const data = await this._refreshToken();
         const [username, password] = new Buffer(data.authorizationToken, 'base64')
             .toString()
             .split(':');
         return this._promise.resolve({
-            host: data.proxyEndpoint.substring('https://'.length),
             username,
             password,
         });
+    }
+
+    async _refreshToken() {
+        const token = await this._ecr
+            .getAuthorizationToken()
+            .promise();
+        return _.first(token.authorizationData);
+    }
+
+    async getUrl() {
+        const data = await this._refreshToken();
+        return `${data.proxyEndpoint}/v2`;
     }
 }
 

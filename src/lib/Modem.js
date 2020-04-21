@@ -1,29 +1,35 @@
 'use strict';
 
 const _ = require('lodash');
-const request = require('requestretry');
+let request = require('requestretry');
 const os = require('os');
 
 const { parseAuthenticationHeader } = require('./auth-header-parser');
-const { buildUrl } = require('./url-builder');
 
 const AUTHENTICATION_HEADER_NAME = 'www-authenticate';
 
 const OK_STATUS_CODE = 200;
 const UNAUTHORIZED_STATUS_CODE = 401;
 
+const RETRY_STATUS_CODES = [502, 503, 504];
+request = request.defaults(
+    {
+        retryStrategy: (err, response = {}) => {
+            return request.RetryStrategies.NetworkError(err, response) ||
+                RETRY_STATUS_CODES.includes(response.statusCode);
+        },
+    });
 
 exports.RegistryModem = class {
 
     constructor(options) {
+        this.registry = options.registry;
         this._promise = options.promise || Promise;
         this.clientId = options.clientId || os.hostname();
 
         const requestOptions = options.request || {};
         const requestConfig = {};
-        if (requestOptions.url || requestOptions.host) {
-            requestConfig.baseUrl = buildUrl(requestOptions);
-        }
+
         this._request = request.defaults(_.assign(requestConfig, _.pick(requestOptions, [
             'timeout',
             'retryStrategy',
@@ -53,37 +59,22 @@ exports.RegistryModem = class {
             body: options.payload
         };
 
-        return this._getCredentials()
-            .then((credentials) => {
-                // mainly ecr case which has proxyEndpoint
-                if (credentials.host) {
-                    this._request = this._request.defaults({
-                        baseUrl: buildUrl(_.pick(credentials, 'host')),
-                    });
-                }
-                return credentials;
+        return this.registry.getUrl()
+            .then((url) => {
+                this._request = this._request.defaults({
+                    baseUrl: url,
+                });
             })
-            .then((credentials) => {
+            .then(() => {
                 if (options.auth) {
-                    return this._retrieveAuthenticationInfo()
-                        .then((authInfo) => {
-                            if (authInfo.realm === 'basic') {
-                                requestOptions.auth = credentials;
-                                return this._promise.resolve();
+                    return this._authenticateRequest(
+                        options.auth.repository,
+                        options.auth.actions,
+                    )
+                        .then((auth) => {
+                            if (auth) {
+                                requestOptions.auth = auth;
                             }
-                            return this._retrieveAuthenticationToken(
-                                authInfo,
-                                credentials,
-                                options.auth.repository,
-                                options.auth.actions,
-                            )
-                                .then((token) => {
-                                    if (token) {
-                                        requestOptions.auth = {
-                                            bearer: token,
-                                        };
-                                    }
-                                });
                         });
                 }
                 return this._promise.resolve();
@@ -107,22 +98,28 @@ exports.RegistryModem = class {
             });
     }
 
-    _retrieveAuthenticationToken(authInfo, credentials, repository, actions) {
-        if (!authInfo) {
-            return undefined;
-        }
-        return this._promise.resolve()
-            .then(() => {
+    _authenticateRequest(repository, actions) {
+        return this._promise.all([
+            this._retrieveAuthenticationInfo(),
+            this._getCredentials(),
+        ])
+            .then(([authInfo, credentials]) => {
+                if (authInfo === undefined) {
+                    return undefined;
+                }
+                if (authInfo.realm === 'basic') {
+                    return { basic: credentials };
+                }
                 return new this._promise((resolve, reject) => {
                     request({
                         url: authInfo.realm,
                         qs: {
                             scope: repository ? `repository:${repository}:${actions.join(',')}` : undefined,
                             service: authInfo.service,
-                            client_id: this.clientId
+                            client_id: this.clientId,
                         },
                         auth: credentials,
-                        json: true
+                        json: true,
                     }, (err, response, body) => {
                         if (err) {
                             reject(err);
@@ -137,7 +134,8 @@ exports.RegistryModem = class {
                             throw new Error(`Failed retrieving token: ${message}`);
                         }
 
-                        return body.token || body.access_token;
+                        const bearer = body.token || body.access_token;
+                        return { bearer };
                     });
             });
     }

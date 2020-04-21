@@ -41,7 +41,7 @@ describe('Url Builder', () => {
             host: 'reg.io'
         });
 
-        expect(url).to.equal('http://reg.io/v2');
+        expect(url).to.equal('https://reg.io/v2');
     });
 
     it('should return the url when url is defined', () => {
