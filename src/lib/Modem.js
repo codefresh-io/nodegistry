@@ -108,7 +108,7 @@ exports.RegistryModem = class {
                     return undefined;
                 }
                 if (authInfo.realm === 'basic') {
-                    return { basic: credentials };
+                    return credentials;
                 }
                 return new this._promise((resolve, reject) => {
                     request({

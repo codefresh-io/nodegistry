@@ -12,7 +12,7 @@ class StandardRegistry {
         this.credentials = options.credentials;
         this.requestOptions = options.request;
         this._promise = options.promise || Promise;
-        this.api = new Client(_.assign(options, {
+        this.api = new Client(_.assign({}, options, {
             registry: this,
             credentials: () => this.getCredentials(),
         }));
