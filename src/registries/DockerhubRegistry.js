@@ -1,7 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
-
 const StandardRegistry = require('./StandardRegistry');
 
 class DockerhubRegistry extends StandardRegistry {
@@ -11,6 +9,14 @@ class DockerhubRegistry extends StandardRegistry {
         }
         options.request.host = 'index.docker.io';
         super(options);
+    }
+
+    async getUrl() {
+        return 'https://index.docker.io/v2';
+    }
+
+    async getDomain() {
+        return 'docker.io';
     }
 }
 
