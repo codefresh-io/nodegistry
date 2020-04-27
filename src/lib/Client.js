@@ -44,6 +44,7 @@ exports.Client = class {
             statusCodes: {
                 200: true,
                 401: 'Unauthorized operation',
+                404: 'Image reference does not exist in repository',
                 403: 'Forbidden operation'
             }
         })
@@ -70,6 +71,7 @@ exports.Client = class {
                 400: 'Manifest invalid',
                 401: 'Unauthorized operation',
                 403: 'Forbidden operation',
+                404: 'Image reference does not exist in repository',
                 405: 'Operation is not supported'
             }
         });
@@ -90,6 +92,7 @@ exports.Client = class {
                 400: 'Manifest invalid',
                 401: 'Unauthorized operation',
                 403: 'Forbidden operation',
+                404: 'Image reference does not exist in repository',
                 405: 'Operation is not supported'
             }
         });
