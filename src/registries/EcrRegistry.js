@@ -9,6 +9,7 @@ class EcrRegistry extends StandardRegistry {
     constructor(options) {
         super(options);
         const { accessKeyId, secretAccessKey, region } = options.credentials;
+        this._auth = null;
         this._ecr = new ECR({
             accessKeyId,
             secretAccessKey,
@@ -17,26 +18,43 @@ class EcrRegistry extends StandardRegistry {
     }
 
     async getCredentials() {
-        const data = await this._refreshToken();
-        const [username, password] = new Buffer(data.authorizationToken, 'base64')
-            .toString()
-            .split(':');
-        return this._promise.resolve({
-            username,
-            password,
-        });
-    }
-
-    async _refreshToken() {
-        const token = await this._ecr
-            .getAuthorizationToken()
-            .promise();
-        return _.first(token.authorizationData);
+        const auth = await this._refreshAuth();
+        return this._promise.resolve(auth.credentials);
     }
 
     async getUrl() {
-        const data = await this._refreshToken();
-        return `${data.proxyEndpoint}/v2`;
+        const auth = await this._refreshAuth();
+        return this._promise.resolve(`https://${auth.domain}/v2`);
+    }
+
+    async getDomain() {
+        const auth = await this._refreshAuth();
+        return this._promise.resolve(auth.domain);
+    }
+
+    async _refreshAuth() {
+        const tokenExpires = _.get(this, '_auth.expiresAt', new Date(0));
+        if (new Date() < tokenExpires) {
+            return this._promise.resolve(this._auth);
+        }
+
+        const token = await this._ecr
+            .getAuthorizationToken()
+            .promise();
+        const { proxyEndpoint, authorizationToken, expiresAt } = _.first(token.authorizationData);
+        const domain = proxyEndpoint.substring('https://'.length);
+        const [username, password] = new Buffer(authorizationToken, 'base64')
+            .toString()
+            .split(':');
+        this._auth = {
+            domain,
+            expiresAt,
+            credentials: {
+                username,
+                password,
+            },
+        };
+        return this._promise.resolve(this._auth);
     }
 }
 
