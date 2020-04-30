@@ -21,8 +21,8 @@ exports.parseAuthenticationHeader = (header) => {
         for (let regexResult = regex.exec(header); regexResult; regexResult = regex.exec(header)) {
             result[regexResult[1]] = regexResult[2];
         }
-    } else if (AUTHENTICATION_HEADER_REGEX_ALTERNATIVE.test(header)){
-        regex = /([a-z]*)=((?:"[^"]*")|(?:(?:[^,]+):\w+,?(?:,\w+)*))(?:,|$)/ig
+    } else if (AUTHENTICATION_HEADER_REGEX_ALTERNATIVE.test(header)) {
+        regex = /([a-z]*)=((?:"[^"]*")|(?:(?:[^,]+):\w+,?(?:,\w+)*))(?:,|$)/ig;
         regex.lastIndex = AUTHENTICATION_HEADER_PREFIX.length;
         for (let regexResult = regex.exec(header); regexResult; regexResult = regex.exec(header)) {
             result[regexResult[1]] = (regexResult[2] || '').replace(/"/g, '');

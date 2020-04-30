@@ -105,10 +105,8 @@ describe('Registry Modem -', () => {
             const token = modem._authenticateRequest('image/repo', ['push']);
 
             return expect(token).to.eventually.become({
-                basic: {
-                    username: CREDENTIALS.user,
-                    password: CREDENTIALS.pass,
-                }
+                username: CREDENTIALS.user,
+                password: CREDENTIALS.pass,
             });
         });
 
