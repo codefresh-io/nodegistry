@@ -139,6 +139,7 @@ exports.RegistryModem = class {
                             throw new CFError({
                                 statusCode: response.statusCode,
                                 message: `Failed retrieving token: ${message}`,
+                                cause: new Error(body),
                             });
                         }
 
@@ -154,15 +155,15 @@ exports.RegistryModem = class {
                 this._request({
                     url: '/',
                     json: true
-                }, (err, response) => {
+                }, (err, response, body) => {
                     if (err) {
                         reject(err);
                     } else {
-                        resolve(response);
+                        resolve([response, body]);
                     }
                 });
             })
-                .then((response) => {
+                .then(([response, body]) => {
                     switch (response.statusCode) {
                         case OK_STATUS_CODE:
                             return undefined;
@@ -175,6 +176,7 @@ exports.RegistryModem = class {
                                 statusCode: response.statusCode,
                                 message: `Unknown status code ${response.statusCode} on ` +
                                     'getting authentication information',
+                                cause: new Error(body),
                             });
                     }
                 });
