@@ -3,6 +3,7 @@
 const _ = require('lodash');
 let request = require('requestretry');
 const os = require('os');
+const CFError = require('cf-errors');
 
 const { parseAuthenticationHeader } = require('./auth-header-parser');
 
@@ -93,7 +94,11 @@ exports.RegistryModem = class {
                 if (currentStatus === true) {
                     return body;
                 } else {
-                    throw new Error(currentStatus || 'Unknown error');
+                    throw new CFError({
+                        statusCode: response.statusCode,
+                        message: currentStatus || 'Unknown error',
+                        cause: new Error(body)
+                    });
                 }
             });
     }
@@ -131,7 +136,10 @@ exports.RegistryModem = class {
                     .then(([response, body]) => {
                         if (response.statusCode !== OK_STATUS_CODE) {
                             const message = body.details || (body.errors && body.errors.length && body.errors[0].message) || 'Unknown Error';
-                            throw new Error(`Failed retrieving token: ${message}`);
+                            throw new CFError({
+                                statusCode: response.statusCode,
+                                message: `Failed retrieving token: ${message}`,
+                            });
                         }
 
                         const bearer = body.token || body.access_token;
@@ -163,8 +171,11 @@ exports.RegistryModem = class {
                             return parseAuthenticationHeader(authHeader);
                         }
                         default:
-                            throw new Error(`Unknown status code ${response.statusCode} on ` +
-                                             'getting authentication information');
+                            throw new CFError({
+                                statusCode: response.statusCode,
+                                message: `Unknown status code ${response.statusCode} on ` +
+                                    'getting authentication information',
+                            });
                     }
                 });
         }

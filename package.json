@@ -38,6 +38,7 @@
     "aws-sdk": "^2.656.0",
     "google-auto-auth": "^0.10.1",
     "lodash": "^4.17.15",
-    "bluebird": "^3.7.2"
+    "bluebird": "^3.7.2",
+    "cf-errors": "^0.1.12"
   }
 }
