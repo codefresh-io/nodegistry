@@ -61,6 +61,16 @@ class StandardRegistry {
         };
     }
 
+    reference(reference) {
+        const { repository, tag, digest } = parseFamiliarName(reference);
+        return {
+            getManifest: () => this.api.getManifest(repository, tag || digest),
+            putManifest: manifest => this.api.putManifest(repository, tag || digest, manifest),
+            deleteManifest: () => this.api.deleteManifest(repository, tag || digest),
+            getConfig: manifest => this.api.getConfig(repository, manifest),
+        };
+    }
+
     getCredentials() {
         return this._promise.resolve(this.credentials);
     }
