@@ -9,7 +9,7 @@ exports.Manifest = class {
         this._body = JSON.parse(rawManifest);
 
         if (this.mediaType !== defaultManifestType) {
-            throw new Error(`Manifest media-type: "${this.type}" is not supported`);
+            throw new Error(`Manifest media-type: "${this.mediaType}" is not supported`);
         }
     }
 
