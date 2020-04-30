@@ -97,7 +97,8 @@ exports.RegistryModem = class {
                     throw new CFError({
                         statusCode: response.statusCode,
                         message: currentStatus || 'Unknown error',
-                        cause: new Error(body)
+                        cause: new Error(body),
+                        body,
                     });
                 }
             });
@@ -140,6 +141,7 @@ exports.RegistryModem = class {
                                 statusCode: response.statusCode,
                                 message: `Failed retrieving token: ${message}`,
                                 cause: new Error(body),
+                                body,
                             });
                         }
 
@@ -177,6 +179,7 @@ exports.RegistryModem = class {
                                 message: `Unknown status code ${response.statusCode} on ` +
                                     'getting authentication information',
                                 cause: new Error(body),
+                                body,
                             });
                     }
                 });
