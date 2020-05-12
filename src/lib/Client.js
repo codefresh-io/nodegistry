@@ -1,7 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
 const { RegistryModem } = require('./Modem');
-const { Manifest } = require('./Manifest');
 
 const DEFAULT_MANIFEST_TYPE = 'application/vnd.docker.distribution.manifest.v2+json';
 
@@ -46,10 +46,15 @@ exports.Client = class {
                 401: 'Unauthorized operation',
                 404: 'Image reference does not exist in repository',
                 403: 'Forbidden operation'
-            }
+            },
+            returnRawResponse: true,
         })
-            .then((rawManifest) => {
-                return new Manifest(rawManifest);
+            .then((response) => {
+                const manifest = JSON.parse(response.body);
+                if (_.get(response, 'headers.docker-content-digest')) {
+                    _.set(manifest, 'config.repoDigest', response.headers['docker-content-digest']);
+                }
+                return manifest;
             });
     }
 
@@ -64,7 +69,7 @@ exports.Client = class {
             headers: {
                 'Content-Type': manifest.mediaType,
             },
-            payload: manifest.raw,
+            payload: _.isString(manifest) ? manifest : JSON.stringify(manifest),
             statusCodes: {
                 200: true,
                 201: true,
@@ -99,7 +104,7 @@ exports.Client = class {
     }
 
     getConfig(repository, manifest) {
-        const config = manifest.configInformation;
+        const config = manifest.config;
 
         return this._modem.dial({
             method: 'GET',

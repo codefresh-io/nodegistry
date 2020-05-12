@@ -92,7 +92,7 @@ exports.RegistryModem = class {
             .then(([response, body]) => {
                 const currentStatus = statusCodes[response.statusCode];
                 if (currentStatus === true) {
-                    return body;
+                    return options.returnRawResponse ? response : body;
                 } else {
                     throw new CFError({
                         statusCode: response.statusCode,
