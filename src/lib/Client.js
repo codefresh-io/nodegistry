@@ -59,6 +59,9 @@ exports.Client = class {
     }
 
     putManifest(repository, reference, manifest) {
+        if (!_.isString(manifest) && _.get(manifest, 'config.repoDigest')) {
+            delete manifest.config.repoDigest;
+        }
         return this._modem.dial({
             method: 'PUT',
             path: `/${repository}/manifests/${reference}`,
@@ -78,7 +81,7 @@ exports.Client = class {
                 403: 'Forbidden operation',
                 404: 'Image reference does not exist in repository',
                 405: 'Operation is not supported'
-            }
+            },
         });
     }
 
