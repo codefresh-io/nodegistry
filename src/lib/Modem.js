@@ -60,7 +60,8 @@ exports.RegistryModem = class {
             body: options.payload
         };
 
-        return this.registry.getUrl()
+        return this._promise.resolve()
+            .then(() => this.registry.getUrl())
             .then((url) => {
                 this._request = this._request.defaults({
                     baseUrl: url,
