@@ -6,7 +6,7 @@ const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
 const chaiAsPromised = require('chai-as-promised');
 
-const { RegistryModem } = require('./modem');
+const { RegistryModem } = require('./Modem');
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -20,18 +20,18 @@ const CREDENTIALS = {
 describe('Registry Modem -', () => {
 
     let modem;
+    let getUrlStub;
 
     before(() => {
         nock.disableNetConnect();
     });
 
     beforeEach(() => {
+        getUrlStub = sinon.stub().resolves('http://registry.io:5000/v2/');
         modem = new RegistryModem({
-            protocol: 'http',
-            host: 'registry.io',
-            port: 5000,
-            version: 'v2',
-
+            registry: {
+                getUrl: getUrlStub,
+            },
             promise: Promise,
             clientId: 'some-client-id',
             credentials: {
@@ -59,6 +59,14 @@ describe('Registry Modem -', () => {
                 });
         }
 
+        function authBasicInfoNock() {
+            nock('http://registry.io:5000')
+                .get('/v2/')
+                .reply(401, {}, {
+                    'www-authenticate': 'Basic realm="no matter what"'
+                });
+        }
+
         function authTokenNock() {
             nock('http://auth.io')
                 .get('/')
@@ -77,12 +85,29 @@ describe('Registry Modem -', () => {
             authTokenNock();
         }
 
+        beforeEach(async () => {
+            modem._request = modem._request.defaults({
+                baseUrl: await modem.registry.getUrl(),
+            });
+        });
+
         it('should retrieve auth token', () => {
             basicNocks();
 
-            const token = modem._retrieveAuthenticationToken('image/repo', ['push']);
+            const token = modem._authenticateRequest('image/repo', ['push']);
 
-            return expect(token).to.eventually.become('the-token');
+            return expect(token).to.eventually.become({ bearer: 'the-token' });
+        });
+
+        it('should use basic auth when www-authenticate realm is basic', () => {
+            authBasicInfoNock();
+
+            const token = modem._authenticateRequest('image/repo', ['push']);
+
+            return expect(token).to.eventually.become({
+                username: CREDENTIALS.user,
+                password: CREDENTIALS.pass,
+            });
         });
 
         it('should return empty object when registry has no authentication', () => {
@@ -90,7 +115,7 @@ describe('Registry Modem -', () => {
                 .get('/v2/')
                 .reply(200, {});
 
-            const token = modem._retrieveAuthenticationToken('image/repo', ['push']);
+            const token = modem._authenticateRequest('image/repo', ['push']);
 
             return expect(token).to.eventually.become(undefined);
         });
@@ -108,9 +133,9 @@ describe('Registry Modem -', () => {
                 .basicAuth(CREDENTIALS)
                 .reply(200, { token: 'double-token' });
 
-            const token = modem._retrieveAuthenticationToken('image/repo', ['push', 'pull']);
+            const token = modem._authenticateRequest('image/repo', ['push', 'pull']);
 
-            return expect(token).to.eventually.become('double-token');
+            return expect(token).to.eventually.become({ bearer: 'double-token' });
         });
 
         it('should throw an error when credentials are wrong (docker-hub error format)', () => {
@@ -122,7 +147,7 @@ describe('Registry Modem -', () => {
                 .basicAuth(CREDENTIALS)
                 .reply(401, { details: 'An error message about wrong credentials' });
 
-            const token = modem._retrieveAuthenticationToken('image/repo', ['pull']);
+            const token = modem._authenticateRequest('image/repo', ['pull']);
 
             return expect(token).to.be.rejectedWith('Failed retrieving token: An error message about wrong credentials');
         });
@@ -141,7 +166,7 @@ describe('Registry Modem -', () => {
                     }]
                 });
 
-            const token = modem._retrieveAuthenticationToken('image/repo', ['pull']);
+            const token = modem._authenticateRequest('image/repo', ['pull']);
 
             return expect(token).to.be.rejectedWith('Failed retrieving token: An error message about wrong credentials');
         });
@@ -150,13 +175,13 @@ describe('Registry Modem -', () => {
     describe('Dialing', () => {
 
         beforeEach(() => {
-            sinon.stub(modem, '_retrieveAuthenticationToken');
+            sinon.stub(modem, '_authenticateRequest');
         });
 
-        it('should return the registry reply', () => {
-            modem._retrieveAuthenticationToken
+        it('should return the registry reply', async () => {
+            modem._authenticateRequest
                 .withArgs('image-repo', ['push'])
-                .resolves('auth-token');
+                .resolves({ bearer: 'auth-token' });
 
             nock('http://registry.io:5000')
                 .post('/v2/some/image/post', 'payload string')
@@ -188,13 +213,14 @@ describe('Registry Modem -', () => {
                 }
             });
 
-            return expect(result).to.eventually.become('this is mocked reply');
+            await expect(result).to.eventually.become('this is mocked reply');
+            expect(getUrlStub).to.have.been.called;
         });
 
-        it('should return the registry reply when no authentication needed', () => {
-            modem._retrieveAuthenticationToken
+        it('should return the registry reply when no authentication needed', async () => {
+            modem._authenticateRequest
                 .withArgs('image-repo', ['push'])
-                .resolves('auth-token');
+                .resolves({ bearer: 'auth-token' });
 
             nock('http://registry.io:5000')
                 .get('/v2/some/image/no/auth')
@@ -220,13 +246,14 @@ describe('Registry Modem -', () => {
                 }
             });
 
-            return expect(result).to.eventually.become('this is mocked reply');
+            await expect(result).to.eventually.become('this is mocked reply');
+            expect(getUrlStub).to.have.been.called;
         });
 
-        it('should throw error on expected error code', () => {
-            modem._retrieveAuthenticationToken
+        it('should throw error on expected error code', async () => {
+            modem._authenticateRequest
                 .withArgs('image-repo', ['push'])
-                .resolves('auth-token');
+                .resolves({ bearer: 'auth-token' });
 
             nock('http://registry.io:5000')
                 .get('/v2/some/image/expected/error')
@@ -258,13 +285,14 @@ describe('Registry Modem -', () => {
                 }
             });
 
-            return expect(result).to.be.rejectedWith('this is an error');
+            await expect(result).to.be.rejectedWith('this is an error');
+            expect(getUrlStub).to.have.been.called;
         });
 
-        it('should throw unknown error on unexpected error code', () => {
-            modem._retrieveAuthenticationToken
+        it('should throw unknown error on unexpected error code', async () => {
+            modem._authenticateRequest
                 .withArgs('image-repo', ['push'])
-                .resolves('auth-token');
+                .resolves({ bearer: 'auth-token' });
 
             nock('http://registry.io:5000')
                 .get('/v2/some/image/unexpected/error')
@@ -296,7 +324,8 @@ describe('Registry Modem -', () => {
                 }
             });
 
-            return expect(result).to.be.rejectedWith('Unknown error');
+            await expect(result).to.be.rejectedWith('Unknown error');
+            expect(getUrlStub).to.have.been.called;
         });
     });
 });
