@@ -10,10 +10,12 @@ exports.buildUrl = (options) => {
         const protocol = options.protocol || 'https';
         const version = options.version || 'v2';
 
+        const host = options.host.split('/')[0];
+
         if (options.port) {
-            return `${protocol}://${options.host}:${options.port}/${version}`;
+            return `${protocol}://${host}:${options.port}/${version}`;
         } else {
-            return `${protocol}://${options.host}/${version}`;
+            return `${protocol}://${host}/${version}`;
         }
     } else {
         return options.url;

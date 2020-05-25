@@ -44,6 +44,14 @@ describe('Url Builder', () => {
         expect(url).to.equal('https://reg.io/v2');
     });
 
+    it('should take only first part of domain if domain is composite', () => {
+        const url = buildUrl({
+            host: 'reg.io/test'
+        });
+
+        expect(url).to.equal('https://reg.io/v2');
+    });
+
     it('should return the url when url is defined', () => {
         const url = buildUrl({ url: 'http://r.example.io:342/v1' });
 

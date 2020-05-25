@@ -18,13 +18,15 @@ class StandardRegistry {
         }));
     }
 
-    async getUrl() {
-        return buildUrl(this.requestOptions);
+    getUrl() {
+        const url = buildUrl(this.requestOptions);
+        return this._promise.resolve(url);
     }
 
     async getDomain() {
         const url = await this.getUrl();
-        return Url.parse(url).host;
+        const host = Url.parse(url).host;
+        return this._promise.resolve(host);
     }
 
     ping() {
