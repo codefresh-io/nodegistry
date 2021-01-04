@@ -1,7 +1,6 @@
 'use strict';
 
-const googleAuth = require('google-auto-auth');
-const Promise = require('bluebird');
+const { GoogleAuth } = require('google-auth-library');
 
 const StandardRegistry = require('./StandardRegistry');
 
@@ -11,12 +10,12 @@ class GcrRegistry extends StandardRegistry {
         const { keyFilePath, client_email, private_key } = this.credentials;
 
         if (keyFilePath) {
-            this._googleAuth = googleAuth({
+            this._googleAuth = new GoogleAuth({
                 keyFilename: keyFilePath,
                 scopes: ['https://www.googleapis.com/auth/devstorage.read_write'],
             });
         } else {
-            this._googleAuth = googleAuth({
+            this._googleAuth = new GoogleAuth({
                 credentials: {
                     client_email,
                     private_key,
@@ -26,17 +25,27 @@ class GcrRegistry extends StandardRegistry {
         }
     }
 
-    async getCredentials() {
-        const token = await Promise.fromCallback(cb => this._googleAuth.getToken(cb));
-        return this._promise.resolve({
-            username: 'oauth2accesstoken',
-            password: token,
-        });
+    async _getClient() {
+        if (!this._clientPromise) {
+            this._clientPromise = this._googleAuth.getClient();
+        }
+
+        const client = await this._clientPromise;
+        await client.authorize();
+        return client;
     }
 
-    getProjectId() {
-        const promise = Promise.fromCallback(cb => this._googleAuth.getProjectId(cb));
-        return this._promise.resolve(promise);
+    async getCredentials() {
+        const client = await this._getClient();
+        const { access_token } = await client.authorize();
+        return {
+            username: 'oauth2accesstoken',
+            password: access_token
+        };
+    }
+
+    async getProjectId() {
+        return this._googleAuth.getProjectId();
     }
 }
 
