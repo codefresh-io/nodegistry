@@ -7,7 +7,7 @@ const StandardRegistry = require('./StandardRegistry');
 class GcrRegistry extends StandardRegistry {
     constructor(options) {
         super(options);
-        const { keyFilePath, client_email, private_key } = this.credentials;
+        const { keyFilePath, client_email, private_key } = JSON.parse(options.keyfile || 'false') || this.credentials || options;
 
         if (keyFilePath) {
             this._googleAuth = new GoogleAuth({
