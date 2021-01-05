@@ -9,9 +9,12 @@ const { buildUrl } = require('../lib/url-builder');
 
 class StandardRegistry {
     constructor(options) {
-        this.credentials = options.credentials;
+        this.credentials = options.credentials || {
+            username: options.username,
+            password: options.password,
+        };
+        this.domain = options.domain;
         this.requestOptions = options.request;
-        this._promise = options.promise || Promise;
         this.api = new Client(_.assign({}, options, {
             registry: this,
             credentials: () => this.getCredentials(),
@@ -19,14 +22,16 @@ class StandardRegistry {
     }
 
     getUrl() {
-        const url = buildUrl(this.requestOptions);
-        return this._promise.resolve(url);
+        return buildUrl(this.requestOptions);
     }
 
-    async getDomain() {
-        const url = await this.getUrl();
-        const host = Url.parse(url).host;
-        return this._promise.resolve(host);
+    getDomain() {
+        if (!this.domain) {
+            const url = this.getUrl();
+            this.domain = Url.parse(url).host;
+        }
+
+        return this.domain;
     }
 
     ping() {
@@ -74,7 +79,7 @@ class StandardRegistry {
     }
 
     getCredentials() {
-        return this._promise.resolve(this.credentials);
+        return this.credentials;
     }
 }
 

@@ -11,12 +11,12 @@ class DockerhubRegistry extends StandardRegistry {
         super(options);
     }
 
-    getUrl() {
-        return this._promise.resolve('https://index.docker.io/v2');
+    async getUrl() {
+        return 'https://index.docker.io/v2';
     }
 
     async getDomain() {
-        return this._promise.resolve('docker.io');
+        return 'docker.io';
     }
 }
 
