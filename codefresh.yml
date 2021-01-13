@@ -1,5 +1,11 @@
 version: '1.0'
 steps:
+  main_clone:
+    title: Cloning main repository...
+    type: git-clone
+    repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
+    revision: '${{CF_REVISION}}'
+
   unit_test_step:
     title: "Executing unit tests..."
     image: node:10.15.3
@@ -13,10 +19,10 @@ steps:
       - yarn test
 
   deploy_to_npm:
-     title: Publishing To Npm
-     image: codefresh/npm-publish:master
-     commands:
-       - NPM_TOKEN=${{NPM_TOKEN}} npm run publish
-     when:
-       branch:
-         only: [ master ]
+    type: npm-publish
+    arguments:
+      NPM_TOKEN: '${{NPM_TOKEN}}'
+      DIR: '${{CF_REPO_NAME}}'
+    when:
+      branch:
+        only: [ master ]
