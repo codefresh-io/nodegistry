@@ -12,8 +12,8 @@ const ACR_DOCKER_USERNAME = '00000000-0000-0000-0000-000000000000';
 class AcrRegistry extends StandardRegistry {
     constructor(options) {
         super(options);
-        const { clientId, clientSecret, domain } = options.credentials || options;
-        this._credentials = { clientId, clientSecret, domain };
+        const { clientId, clientSecret } = options.credentials || options;
+        this._credentials = { clientId, clientSecret };
         this._auth = null;
     }
 
@@ -77,10 +77,10 @@ class AcrRegistry extends StandardRegistry {
 
     async _getCredentialsUsingMI() {
         const credentials = await this.getCredentialsFromManagedIdentity(_.get(this, '_credentials.clientId'));
-        const authorizationToken = await this._exchangeTokenToRefreshToken(this._credentials.domain, credentials);
+        const authorizationToken = await this._exchangeTokenToRefreshToken(this.domain, credentials);
         const { exp } = jwt.decode(authorizationToken);
         return {
-            domain: this._credentials.domain,
+            domain: this.domain,
             expiresAt: new Date(exp * 1000),
             credentials: {
                 username: ACR_DOCKER_USERNAME,
@@ -93,7 +93,7 @@ class AcrRegistry extends StandardRegistry {
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 1);
         return {
-            domain: this._credentials.domain,
+            domain: this.domain,
             expiresAt,
             credentials: {
                 username: _.get(this, '_credentials.clientId'),
