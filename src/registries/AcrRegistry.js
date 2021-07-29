@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const StandardRegistry = require('./StandardRegistry');
 const qs = require('querystring');
-const request = require('requestretry');
+const request = require('request-promise');
 const jwt = require('jsonwebtoken');
 const CFError = require('cf-errors');
 
