@@ -5,6 +5,7 @@ const StandardRegistry = require('./StandardRegistry');
 const qs = require('querystring');
 const request = require('requestretry');
 const jwt = require('jsonwebtoken');
+const CFError = require('cf-errors');
 
 const MANAGED_IDENTITY_URL = 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/';
 const ACR_DOCKER_USERNAME = '00000000-0000-0000-0000-000000000000';
@@ -32,19 +33,6 @@ class AcrRegistry extends StandardRegistry {
             return `${MANAGED_IDENTITY_URL}&client_id=${clientId}`;
         }
         return MANAGED_IDENTITY_URL;
-    }
-
-    async getCredentialsFromManagedIdentity(clientId) {
-        const managedIdentityURL = this._getManagedIdentityURL(clientId);
-        const options = {
-            method: 'GET',
-            json: true,
-            headers: {
-                Metadata: true
-            },
-            uri: managedIdentityURL
-        };
-        return request(options);
     }
 
     async _exchangeTokenToRefreshToken(service, credentials) {
@@ -75,18 +63,38 @@ class AcrRegistry extends StandardRegistry {
         return exchangeResponseData.refresh_token;
     }
 
-    async _getCredentialsUsingMI() {
-        const credentials = await this.getCredentialsFromManagedIdentity(_.get(this, '_credentials.clientId'));
-        const authorizationToken = await this._exchangeTokenToRefreshToken(this.domain, credentials);
-        const { exp } = jwt.decode(authorizationToken);
-        return {
-            domain: this.domain,
-            expiresAt: new Date(exp * 1000),
-            credentials: {
-                username: ACR_DOCKER_USERNAME,
-                password: authorizationToken
-            }
+    async _getTokenFromManagedIdentity(domain, clientId) {
+        const managedIdentityURL = this._getManagedIdentityURL(clientId);
+        const options = {
+            method: 'GET',
+            json: true,
+            headers: {
+                Metadata: true
+            },
+            uri: managedIdentityURL
         };
+        const credentials = await request(options);
+        return this._exchangeTokenToRefreshToken(domain, credentials);
+    }
+
+    async _getCredentialsUsingMI() {
+        try {
+            const authorizationToken = await this._getTokenFromManagedIdentity(this.domain, _.get(this, '_credentials.clientId'));
+            const { exp } = jwt.decode(authorizationToken);
+            return {
+                domain: this.domain,
+                expiresAt: new Date(exp * 1000),
+                credentials: {
+                    username: ACR_DOCKER_USERNAME,
+                    password: authorizationToken
+                }
+            };
+        } catch (err) {
+            throw new CFError({
+                cause: err,
+                message: 'Failed to get ACR credentials using managed identity'
+            });
+        }
     }
 
     async _getCredentialsUsingSP() {
