@@ -1,6 +1,6 @@
 {
   "name": "nodegistry",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Docker Registry Remote API module.",
   "main": "index.js",
   "repository": "git@github.com:codefresh-io/nodegistry.git",
@@ -33,6 +33,7 @@
     "bluebird": "^3.7.2",
     "cf-errors": "^0.1.16",
     "google-auth-library": "^6.1.3",
+    "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "request": "^2.88.2",
     "requestretry": "^4.1.2"
