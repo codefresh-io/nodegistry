@@ -18,6 +18,7 @@ class StandardRegistry {
         this.api = new Client(_.assign({}, options, {
             registry: this,
             credentials: () => this.getCredentials(),
+            ignoreRedirects: options.ignoreRedirects,
         }));
     }
 

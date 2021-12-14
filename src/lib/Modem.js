@@ -27,6 +27,7 @@ exports.RegistryModem = class {
         this.registry = options.registry;
         this._promise = options.promise || Promise;
         this.clientId = options.clientId || os.hostname();
+        this.ignoreRedirects = options.ignoreRedirects;
 
         const requestOptions = options.request || {};
         const requestConfig = {};
@@ -48,6 +49,20 @@ exports.RegistryModem = class {
         }
 
         this._authenticationInfoPromise = undefined;
+    }
+
+    handleRedirect(url) {
+        return new this._promise((resolve, reject) => {
+            request({
+                url,
+            }, (err, response, body) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve([response, body]);
+                }
+            });
+        });
     }
 
     dial(options) {
@@ -82,6 +97,10 @@ exports.RegistryModem = class {
                 return this._promise.resolve();
             })
             .then(() => new this._promise((resolve, reject) => {
+                if (this.ignoreRedirects) {
+                    requestOptions.followAllRedirects = false;
+                    requestOptions.followRedirect = false;
+                }
                 this._request(requestOptions, (err, response, body) => {
                     if (err) {
                         reject(err);
@@ -90,6 +109,12 @@ exports.RegistryModem = class {
                     }
                 });
             }))
+            .then(([response, body]) => {
+                if (response.statusCode === 307) {
+                    return this.handleRedirect(response.headers.location);
+                }
+                return this._promise.resolve([response, body]);
+            })
             .then(([response, body]) => {
                 const currentStatus = statusCodes[response.statusCode];
                 if (currentStatus === true) {

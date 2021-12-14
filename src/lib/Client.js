@@ -14,6 +14,7 @@ exports.Client = class {
 
             request: options.request,
             registry: options.registry,
+            ignoreRedirects: options.ignoreRedirects,
         });
     }
 

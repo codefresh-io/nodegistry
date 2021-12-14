@@ -7,7 +7,10 @@ const StandardRegistry = require('./StandardRegistry');
 
 class EcrRegistry extends StandardRegistry {
     constructor(options) {
-        super(options);
+        super({
+            ...options,
+            ignoreRedirects: true,
+        });
         const { accessKeyId, secretAccessKey, region } = options.credentials || options;
         this._auth = null;
         this._ecr = new ECR({
