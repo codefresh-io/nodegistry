@@ -27,7 +27,7 @@ exports.RegistryModem = class {
         this.registry = options.registry;
         this._promise = options.promise || Promise;
         this.clientId = options.clientId || os.hostname();
-        this.ignoreRedirects = options.ignoreRedirects
+        this.ignoreRedirects = options.ignoreRedirects;
 
         const requestOptions = options.request || {};
         const requestConfig = {};
