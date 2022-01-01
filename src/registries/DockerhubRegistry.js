@@ -8,7 +8,10 @@ class DockerhubRegistry extends StandardRegistry {
             options.request = {};
         }
         options.request.host = 'index.docker.io';
-        super(options);
+        super({
+            ...options,
+            ignoreRedirects: true,
+        });
     }
 
     async getUrl() {
