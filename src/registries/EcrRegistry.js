@@ -11,11 +11,17 @@ class EcrRegistry extends StandardRegistry {
             ...options,
             ignoreRedirects: true,
         });
-        const { accessKeyId, secretAccessKey, region } = options.credentials || options;
+        const {
+            accessKeyId,
+            secretAccessKey,
+            sessionToken,
+            region 
+        } = options.credentials || options;
         this._auth = null;
         this._ecr = new ECR({
             accessKeyId,
             secretAccessKey,
+            sessionToken,
             region,
         });
     }
