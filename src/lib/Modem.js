@@ -110,7 +110,7 @@ exports.RegistryModem = class {
                 });
             }))
             .then(([response, body]) => {
-                if (response.statusCode === 307) {
+                if ([302, 307].includes(response.statusCode)) {
                     return this.handleRedirect(response.headers.location);
                 }
                 return this._promise.resolve([response, body]);
