@@ -31,7 +31,7 @@
     "sinon-chai": "^2.11.0"
   },
   "dependencies": {
-    "@codefresh-io/docker-reference": "^0.0.5",
+    "@codefresh-io/docker-reference": "^0.0.8",
     "aws-sdk": "^2.868.0",
     "bluebird": "^3.7.2",
     "cf-errors": "^0.1.16",
