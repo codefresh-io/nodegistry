@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@codefresh-io/docker-reference": "^0.0.5",
-    "aws-sdk": "^2.868.0",
+    "aws-sdk": "^2.1354.0",
     "bluebird": "^3.7.2",
     "cf-errors": "^0.1.16",
     "google-auth-library": "^6.1.3",
