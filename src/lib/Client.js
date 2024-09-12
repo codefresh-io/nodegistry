@@ -31,7 +31,7 @@ exports.Client = class {
         });
     }
 
-    getManifest(repository, reference) {
+    getManifest(repository, reference, manifestType = DEFAULT_MANIFEST_TYPE) {
         return this._modem.dial({
             method: 'GET',
             path: `/${repository}/manifests/${reference}`,
@@ -40,7 +40,7 @@ exports.Client = class {
                 actions: ['pull']
             },
             headers: {
-                'Accept': DEFAULT_MANIFEST_TYPE
+                'Accept': manifestType
             },
             statusCodes: {
                 200: true,
