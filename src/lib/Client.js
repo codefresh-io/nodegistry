@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const { RegistryModem } = require('./Modem');
 
-const DEFAULT_MANIFEST_TYPE = 'application/vnd.docker.distribution.manifest.v2+json';
+const DEFAULT_MANIFEST_TYPE = ['application/vnd.docker.distribution.manifest.v2+json', 'application/vnd.oci.image.index.v1+json'];
 
 exports.Client = class {
     constructor(options) {
