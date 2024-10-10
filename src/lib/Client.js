@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const { createHash } = require('crypto');
 const { RegistryModem } = require('./Modem');
 
 const DEFAULT_MANIFEST_TYPE = ['application/vnd.docker.distribution.manifest.v2+json', 'application/vnd.oci.image.index.v1+json'];
@@ -54,6 +55,12 @@ exports.Client = class {
                 const manifest = JSON.parse(response.body);
                 if (_.get(response, 'headers.docker-content-digest')) {
                     _.set(manifest, 'config.repoDigest', response.headers['docker-content-digest']);
+                } else {
+                    // ECR doesn't return a docker-content-digest for
+                    // application/vnd.oci.image.index.v1+json in the response headers.
+                    // Probably there are some other providers that don't return it too.
+                    const hash = createHash('sha256').update(response.body).digest('hex');
+                    _.set(manifest, 'config.repoDigest', `sha256:${hash}`);
                 }
                 return manifest;
             });
