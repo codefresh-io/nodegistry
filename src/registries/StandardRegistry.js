@@ -62,7 +62,8 @@ class StandardRegistry {
     repoTag(repoTag) {
         const { repository, tag } = parseFamiliarName(repoTag);
         return {
-            getManifest: () => this.api.getManifest(repository, tag),
+            getManifest: (digest, manifestType) =>
+                this.api.getManifest(repository, digest || tag, manifestType),
             putManifest: manifest => this.api.putManifest(repository, tag, manifest),
             deleteManifest: () => this.api.deleteManifest(repository, tag),
             getConfig: manifest => this.api.getConfig(repository, manifest),
