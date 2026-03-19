@@ -58,3 +58,4 @@ describe('Url Builder', () => {
         expect(url).to.equal('http://r.example.io:342/v1');
     });
 });
+

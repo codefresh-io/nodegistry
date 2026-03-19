@@ -85,3 +85,4 @@ class StandardRegistry {
 }
 
 module.exports = StandardRegistry;
+

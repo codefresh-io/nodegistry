@@ -216,3 +216,4 @@ exports.RegistryModem = class {
         return this._authenticationInfoPromise;
     }
 };
+

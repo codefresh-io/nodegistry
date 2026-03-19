@@ -35,3 +35,4 @@ exports.parseAuthenticationHeader = (header) => {
 
     return result;
 };
+

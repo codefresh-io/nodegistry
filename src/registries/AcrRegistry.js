@@ -134,3 +134,4 @@ class AcrRegistry extends StandardRegistry {
 }
 
 module.exports = AcrRegistry;
+

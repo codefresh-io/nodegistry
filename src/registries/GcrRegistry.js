@@ -51,3 +51,4 @@ class GcrRegistry extends StandardRegistry {
 }
 
 module.exports = GcrRegistry;
+
