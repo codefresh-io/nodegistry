@@ -62,6 +62,7 @@
     "comma-dangle": ["error", "only-multiline"],
     "quote-props": ["error", "consistent"],
     "class-methods-use-this": "off",
+    "no-multiple-empty-lines": "off",
     "no-unused-expressions": 0,
     "no-use-before-define": ["error", { "functions": false, "classes": true }],
     "no-restricted-syntax": ["error", "WithStatement", "ForInStatement", "LabeledStatement"],
