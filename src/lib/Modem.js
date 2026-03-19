@@ -1,6 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
 let request = require('requestretry');
 const os = require('os');
 const CFError = require('cf-errors');
@@ -16,10 +15,11 @@ const RETRY_STATUS_CODES = [502, 503, 504];
 request = request.defaults(
     {
         retryStrategy: (err, response = {}) => {
-            return request.RetryStrategies.NetworkError(err, response) ||
-                RETRY_STATUS_CODES.includes(response.statusCode);
+            return request.RetryStrategies.NetworkError(err, response)
+                || RETRY_STATUS_CODES.includes(response.statusCode);
         },
-    });
+    }
+);
 
 exports.RegistryModem = class {
 
@@ -30,16 +30,18 @@ exports.RegistryModem = class {
         this.ignoreRedirects = options.ignoreRedirects;
 
         const requestOptions = options.request || {};
-        const requestConfig = {};
+        const {
+            timeout, retryStrategy, maxAttempts, retryDelay, promiseFactory, ca
+        } = requestOptions;
 
-        this._request = request.defaults(_.assign(requestConfig, _.pick(requestOptions, [
-            'timeout',
-            'retryStrategy',
-            'maxAttempts',
-            'retryDelay',
-            'promiseFactory',
-            'ca',
-        ])));
+        this._request = request.defaults({
+            timeout,
+            retryStrategy,
+            maxAttempts,
+            retryDelay,
+            promiseFactory,
+            ca,
+        });
 
         if (typeof options.credentials === 'function') {
             const credentialsFunction = options.credentials;
@@ -66,7 +68,7 @@ exports.RegistryModem = class {
     }
 
     dial(options) {
-        const statusCodes = options.statusCodes;
+        const { statusCodes } = options;
         const requestOptions = {
             method: options.method,
             url: options.path,
@@ -202,8 +204,8 @@ exports.RegistryModem = class {
                         default:
                             throw new CFError({
                                 statusCode: response.statusCode,
-                                message: `Unknown status code ${response.statusCode} on ` +
-                                    'getting authentication information',
+                                message: `Unknown status code ${response.statusCode} on `
+                                    + 'getting authentication information',
                                 cause: new Error(body),
                                 body,
                             });

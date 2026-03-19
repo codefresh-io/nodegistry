@@ -1,11 +1,10 @@
 'use strict';
 
-const _ = require('lodash');
-const StandardRegistry = require('./StandardRegistry');
 const qs = require('querystring');
-const request = require('request-promise');
 const jwt = require('jsonwebtoken');
 const CFError = require('cf-errors');
+
+const StandardRegistry = require('./StandardRegistry');
 
 const MANAGED_IDENTITY_URL = 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/';
 const ACR_DOCKER_USERNAME = '00000000-0000-0000-0000-000000000000';
@@ -41,22 +40,25 @@ class AcrRegistry extends StandardRegistry {
         const reqBody = qs.stringify({
             grant_type: 'access_token',
             service,
-            access_token: _.get(credentials, 'access_token'),
+            access_token: credentials.access_token,
         });
 
         const options = {
             method: 'POST',
-            uri: exchangeEndpoint,
             headers: {
-                'Content-Length': reqBody.length,
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: reqBody,
-            resolveWithFullResponse: true,
         };
 
-        const exchangeResponse = await request(options);
-        const exchangeResponseData = JSON.parse(exchangeResponse.body);
+        const response = await fetch(exchangeEndpoint, options);
+        if (!response.ok) {
+            throw new CFError({
+                statusCode: response.status,
+                message: response.statusText || 'Unknown error'
+            });
+        }
+        const exchangeResponseData = await response.json();
 
         // Now we have a refresh_token to used against token endpoint
         // to get a valid ACR-specific token
@@ -67,19 +69,25 @@ class AcrRegistry extends StandardRegistry {
         const managedIdentityURL = this._getManagedIdentityURL(clientId);
         const options = {
             method: 'GET',
-            json: true,
             headers: {
                 Metadata: true
             },
-            uri: managedIdentityURL
         };
-        const credentials = await request(options);
+        const response = await fetch(managedIdentityURL, options);
+        if (!response.ok) {
+            throw new CFError({
+                statusCode: response.status,
+                message: response.statusText || 'Unknown error'
+            });
+        }
+        const credentials = await response.json();
+
         return this._exchangeTokenToRefreshToken(domain, credentials);
     }
 
     async _getCredentialsUsingMI() {
         try {
-            const authorizationToken = await this._getTokenFromManagedIdentity(this.domain, _.get(this, '_credentials.clientId'));
+            const authorizationToken = await this._getTokenFromManagedIdentity(this.domain, this._credentials?.clientId);
             const { exp } = jwt.decode(authorizationToken);
             return {
                 domain: this.domain,
@@ -104,19 +112,19 @@ class AcrRegistry extends StandardRegistry {
             domain: this.domain,
             expiresAt,
             credentials: {
-                username: _.get(this, '_credentials.clientId'),
-                password: _.get(this, '_credentials.clientSecret')
+                username: this._credentials?.clientId,
+                password: this._credentials?.clientSecret
             }
         };
     }
 
     async _refreshAuth() {
-        const tokenExpires = _.get(this, '_auth.expiresAt', new Date(0));
+        const tokenExpires = this._auth?.expiresAt ?? new Date(0);
         if (new Date() < tokenExpires) {
             return this._auth;
         }
 
-        if (_.get(this, '_credentials.clientSecret') && _.get(this, '_credentials.clientId')) {
+        if (this._credentials?.clientSecret && this._credentials?.clientId) {
             this._auth = await this._getCredentialsUsingSP();
         } else {
             this._auth = await this._getCredentialsUsingMI();

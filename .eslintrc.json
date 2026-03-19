@@ -4,13 +4,10 @@
 // More details: https://codefresh-io.atlassian.net/wiki/display/COD/Code+Style+Guide
 {
 
-  "extends": "airbnb",
+  "extends": "airbnb-base",
   "parserOptions": {
-    "ecmaVersion": 2017,
-    "sourceType": "script",
-    "ecmaFeatures": {
-      "jsx": true
-    }
+    "ecmaVersion": 2023,
+    "sourceType": "script"
   },
 
   "env": {
@@ -65,14 +62,12 @@
     "comma-dangle": ["error", "only-multiline"],
     "quote-props": ["error", "consistent"],
     "class-methods-use-this": "off",
+    "no-unused-expressions": 0,
     "no-use-before-define": ["error", { "functions": false, "classes": true }],
     "no-restricted-syntax": ["error", "WithStatement", "ForInStatement", "LabeledStatement"],
-
+    "max-len": ["error", { "code": 150 }],
     "mocha/no-exclusive-tests": "warn",
     "mocha/no-identical-title": "error",
-
-    "no-unused-expressions": 0,
     "chai-friendly/no-unused-expressions": 2
-
   }
 }

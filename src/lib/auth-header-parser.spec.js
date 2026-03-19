@@ -23,4 +23,3 @@ describe('Authentication Header Parser', () => {
     });
 
 });
-
