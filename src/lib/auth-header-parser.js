@@ -19,13 +19,15 @@ exports.parseAuthenticationHeader = (header) => {
         regex = /([a-z]*)="([^"]*)"(?:,|$)/ig;
         regex.lastIndex = AUTHENTICATION_HEADER_PREFIX.length;
         for (let regexResult = regex.exec(header); regexResult; regexResult = regex.exec(header)) {
-            result[regexResult[1]] = regexResult[2];
+            const [, key, value] = regexResult;
+            result[key] = value;
         }
     } else if (AUTHENTICATION_HEADER_REGEX_ALTERNATIVE.test(header)) {
         regex = /([a-z]*)=((?:"[^"]*")|(?:(?:[^,]+):\w+,?(?:,\w+)*))(?:,|$)/ig;
         regex.lastIndex = AUTHENTICATION_HEADER_PREFIX.length;
         for (let regexResult = regex.exec(header); regexResult; regexResult = regex.exec(header)) {
-            result[regexResult[1]] = (regexResult[2] || '').replace(/"/g, '');
+            const [, key, value] = regexResult;
+            result[key] = (value || '').replace(/"/g, '');
         }
     } else {
         throw new Error('Authentication string is invalid');
@@ -33,3 +35,4 @@ exports.parseAuthenticationHeader = (header) => {
 
     return result;
 };
+

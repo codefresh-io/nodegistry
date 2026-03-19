@@ -1,10 +1,13 @@
 'use strict';
 
-const _ = require('lodash');
 const { createHash } = require('crypto');
+
 const { RegistryModem } = require('./Modem');
 
-const DEFAULT_MANIFEST_TYPE = ['application/vnd.docker.distribution.manifest.v2+json', 'application/vnd.oci.image.index.v1+json'];
+const DEFAULT_MANIFEST_TYPE = [
+    'application/vnd.docker.distribution.manifest.v2+json',
+    'application/vnd.oci.image.index.v1+json'
+];
 
 exports.Client = class {
     constructor(options) {
@@ -53,21 +56,21 @@ exports.Client = class {
         })
             .then((response) => {
                 const manifest = JSON.parse(response.body);
-                if (_.get(response, 'headers.docker-content-digest')) {
-                    _.set(manifest, 'config.repoDigest', response.headers['docker-content-digest']);
+                if (response.headers['docker-content-digest']) {
+                    manifest.config.repoDigest = response.headers['docker-content-digest'];
                 } else {
                     // ECR doesn't return a docker-content-digest for
                     // application/vnd.oci.image.index.v1+json in the response headers.
                     // Probably there are some other providers that don't return it too.
                     const hash = createHash('sha256').update(response.body).digest('hex');
-                    _.set(manifest, 'config.repoDigest', `sha256:${hash}`);
+                    manifest.config.repoDigest = `sha256:${hash}`;
                 }
                 return manifest;
             });
     }
 
     putManifest(repository, reference, manifest) {
-        if (!_.isString(manifest) && _.get(manifest, 'config.repoDigest')) {
+        if (typeof manifest !== 'string' && manifest.config?.repoDigest) {
             delete manifest.config.repoDigest;
         }
         return this._modem.dial({
@@ -80,7 +83,7 @@ exports.Client = class {
             headers: {
                 'Content-Type': manifest.mediaType,
             },
-            payload: _.isString(manifest) ? manifest : JSON.stringify(manifest),
+            payload: typeof manifest === 'string' ? manifest : JSON.stringify(manifest),
             statusCodes: {
                 200: true,
                 201: true,
@@ -115,7 +118,7 @@ exports.Client = class {
     }
 
     getConfig(repository, manifest) {
-        const config = manifest.config;
+        const { config } = manifest;
 
         return this._modem.dial({
             method: 'GET',

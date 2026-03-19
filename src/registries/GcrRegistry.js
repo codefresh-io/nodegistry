@@ -7,6 +7,7 @@ const StandardRegistry = require('./StandardRegistry');
 class GcrRegistry extends StandardRegistry {
     constructor(options) {
         super(options);
+        // eslint-disable-next-line camelcase
         const { keyFilePath, client_email, private_key } = JSON.parse(options.keyfile || 'false') || this.credentials || options;
 
         if (keyFilePath) {
@@ -17,8 +18,8 @@ class GcrRegistry extends StandardRegistry {
         } else {
             this._googleAuth = new GoogleAuth({
                 credentials: {
-                    client_email,
-                    private_key,
+                    client_email, // eslint-disable-line camelcase
+                    private_key, // eslint-disable-line camelcase
                 },
                 scopes: ['https://www.googleapis.com/auth/devstorage.read_write'],
             });
@@ -37,10 +38,10 @@ class GcrRegistry extends StandardRegistry {
 
     async getCredentials() {
         const client = await this._getClient();
-        const { access_token } = await client.authorize();
+        const { access_token } = await client.authorize(); // eslint-disable-line camelcase
         return {
             username: 'oauth2accesstoken',
-            password: access_token
+            password: access_token // eslint-disable-line camelcase
         };
     }
 
@@ -50,3 +51,4 @@ class GcrRegistry extends StandardRegistry {
 }
 
 module.exports = GcrRegistry;
+

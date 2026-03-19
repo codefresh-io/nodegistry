@@ -21,3 +21,4 @@ exports.buildUrl = (options) => {
         return options.url;
     }
 };
+

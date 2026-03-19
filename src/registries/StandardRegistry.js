@@ -1,10 +1,9 @@
 'use strict';
 
-const _ = require('lodash');
 const Url = require('url');
+const { parseFamiliarName } = require('@codefresh-io/docker-reference');
 
 const { Client } = require('../lib/Client');
-const { parseFamiliarName } = require('@codefresh-io/docker-reference');
 const { buildUrl } = require('../lib/url-builder');
 
 class StandardRegistry {
@@ -15,11 +14,12 @@ class StandardRegistry {
         };
         this.domain = options.domain;
         this.requestOptions = options.request;
-        this.api = new Client(_.assign({}, options, {
+        this.api = new Client({
+            ...options,
             registry: this,
             credentials: () => this.getCredentials(),
             ignoreRedirects: options.ignoreRedirects,
-        }));
+        });
     }
 
     getUrl() {
@@ -41,11 +41,11 @@ class StandardRegistry {
 
     repository(repository) {
         return {
-            getManifest: reference => this.api.getManifest(repository, reference),
+            getManifest: (reference) => this.api.getManifest(repository, reference),
             // eslint-disable-next-line max-len
             putManifest: (reference, manifest) => this.api.putManifest(repository, reference, manifest),
-            deleteManifest: reference => this.api.deleteManifest(repository, reference),
-            getConfig: manifest => this.api.getConfig(repository, manifest),
+            deleteManifest: (reference) => this.api.deleteManifest(repository, reference),
+            getConfig: (manifest) => this.api.getConfig(repository, manifest),
         };
     }
 
@@ -53,20 +53,19 @@ class StandardRegistry {
         const { repository, digest } = parseFamiliarName(repoDigest);
         return {
             getManifest: () => this.api.getManifest(repository, digest),
-            putManifest: manifest => this.api.putManifest(repository, digest, manifest),
+            putManifest: (manifest) => this.api.putManifest(repository, digest, manifest),
             deleteManifest: () => this.api.deleteManifest(repository, digest),
-            getConfig: manifest => this.api.getConfig(repository, manifest),
+            getConfig: (manifest) => this.api.getConfig(repository, manifest),
         };
     }
 
     repoTag(repoTag) {
         const { repository, tag } = parseFamiliarName(repoTag);
         return {
-            getManifest: (digest, manifestType) =>
-                this.api.getManifest(repository, digest || tag, manifestType),
-            putManifest: manifest => this.api.putManifest(repository, tag, manifest),
+            getManifest: (digest, manifestType) => this.api.getManifest(repository, digest || tag, manifestType),
+            putManifest: (manifest) => this.api.putManifest(repository, tag, manifest),
             deleteManifest: () => this.api.deleteManifest(repository, tag),
-            getConfig: manifest => this.api.getConfig(repository, manifest),
+            getConfig: (manifest) => this.api.getConfig(repository, manifest),
         };
     }
 
@@ -74,9 +73,9 @@ class StandardRegistry {
         const { repository, tag, digest } = parseFamiliarName(reference);
         return {
             getManifest: () => this.api.getManifest(repository, tag || digest),
-            putManifest: manifest => this.api.putManifest(repository, tag || digest, manifest),
+            putManifest: (manifest) => this.api.putManifest(repository, tag || digest, manifest),
             deleteManifest: () => this.api.deleteManifest(repository, tag || digest),
-            getConfig: manifest => this.api.getConfig(repository, manifest),
+            getConfig: (manifest) => this.api.getConfig(repository, manifest),
         };
     }
 
@@ -86,3 +85,4 @@ class StandardRegistry {
 }
 
 module.exports = StandardRegistry;
+

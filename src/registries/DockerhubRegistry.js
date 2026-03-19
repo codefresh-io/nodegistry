@@ -24,3 +24,4 @@ class DockerhubRegistry extends StandardRegistry {
 }
 
 module.exports = DockerhubRegistry;
+
