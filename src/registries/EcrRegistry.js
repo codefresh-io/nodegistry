@@ -59,7 +59,7 @@ class EcrRegistry extends StandardRegistry {
             region
         } = options.credentials || options;
         this._auth = null;
-        if (options.validateAwsRegion && !this._validateAwsRegion(region)) {
+        if ([true, 'true'].includes(options.validateAwsRegion) && !this._validateAwsRegion(region)) {
             throw new Error(`Invalid AWS region: ${region}`);
         }
         this._ecr = new ECR({
