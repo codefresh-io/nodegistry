@@ -56,6 +56,7 @@ exports.Client = class {
         })
             .then((response) => {
                 const manifest = JSON.parse(response.body);
+                manifest.config ??= {};
                 if (response.headers['docker-content-digest']) {
                     manifest.config.repoDigest = response.headers['docker-content-digest'];
                 } else {
