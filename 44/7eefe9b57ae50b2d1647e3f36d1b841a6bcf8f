@@ -1,0 +1,14 @@
+package.json
+  h_9fee6e699064f1 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "447eefe9b57ae50b2d1647e3f36d1b841a6bcf8f",
+  "prompts": {},
+  "humans": {
+    "h_9fee6e699064f1": {
+      "author": "Vadim Kharin <vadim.kharin@codefresh.io>"
+    }
+  }
+}
