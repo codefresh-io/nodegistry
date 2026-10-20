@@ -1,0 +1,21 @@
+package.json
+  s_3224cac54b91d9::t_153d3a1fcf1c0c 35
+yarn.lock
+  s_3224cac54b91d9::t_5f00e9e23652d8 487,1503-1506,1509,1511-1512,1514-1517,1519-1520,1678-1681,1685-1687,1690-1693,1717-1720,1722,2627-2632,3448-3452,3594-3598,3608-3620
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7597349021929e1dfd4bea95700edf93a848f6e7",
+  "prompts": {},
+  "sessions": {
+    "s_3224cac54b91d9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7b0864b6-f104-4ba0-85bf-381acd3929f3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Vadim Kharin <vadim.kharin@codefresh.io>"
+    }
+  }
+}
